@@ -1,4 +1,0 @@
-websockets>=10.0
-pyobjc>=9.0
-psutil>=5.8
-flet>=0.24.0
