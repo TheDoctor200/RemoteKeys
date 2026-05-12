@@ -1,0 +1,49 @@
+<svg width="1600" height="560" viewBox="0 0 1600 560" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">RemoteKeys Hero</title>
+  <desc id="desc">A polished banner showing the RemoteKeys app connected to a desktop machine.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#07111f"/>
+      <stop offset="0.45" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="260" y1="120" x2="1340" y2="460" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38bdf8"/>
+      <stop offset="0.45" stop-color="#34d399"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="1600" height="560" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="560" rx="40" fill="url(#bg)"/>
+  <circle cx="1420" cy="120" r="180" fill="#38bdf8" opacity="0.08"/>
+  <circle cx="220" cy="470" r="210" fill="#34d399" opacity="0.08"/>
+  <path d="M170 390C330 250 520 220 700 245C858 267 1012 250 1158 198C1258 163 1358 132 1468 145" stroke="url(#accent)" stroke-width="14" stroke-linecap="round" opacity="0.65"/>
+  <g filter="url(#shadow)">
+    <rect x="136" y="92" width="560" height="376" rx="32" fill="#0b1220" stroke="#1f2937" stroke-width="2"/>
+    <rect x="180" y="136" width="220" height="24" rx="12" fill="#1f2937"/>
+    <rect x="180" y="182" width="120" height="16" rx="8" fill="#334155"/>
+    <rect x="180" y="214" width="260" height="16" rx="8" fill="#334155"/>
+    <rect x="180" y="258" width="420" height="110" rx="20" fill="#111827" stroke="#243244"/>
+    <rect x="198" y="276" width="118" height="26" rx="13" fill="#1d4ed8"/>
+    <rect x="328" y="276" width="84" height="26" rx="13" fill="#0f766e"/>
+    <rect x="424" y="276" width="90" height="26" rx="13" fill="#f59e0b"/>
+    <rect x="198" y="320" width="360" height="14" rx="7" fill="#334155"/>
+    <rect x="198" y="344" width="280" height="14" rx="7" fill="#334155"/>
+    <circle cx="552" cy="188" r="60" fill="#0f172a" stroke="#38bdf8" stroke-width="3"/>
+    <path d="M528 188L548 164L570 188L548 212Z" fill="#38bdf8"/>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="990" y="118" width="440" height="324" rx="30" fill="#09111d" stroke="#243244" stroke-width="2"/>
+    <rect x="1030" y="158" width="150" height="20" rx="10" fill="#334155"/>
+    <rect x="1030" y="196" width="240" height="16" rx="8" fill="#1f2937"/>
+    <rect x="1030" y="228" width="180" height="16" rx="8" fill="#1f2937"/>
+    <rect x="1030" y="278" width="360" height="120" rx="24" fill="#0f172a" stroke="#1f2937"/>
+    <path d="M1090 324C1108 304 1136 298 1156 312C1175 324 1188 354 1210 364C1245 378 1280 340 1301 316C1326 288 1360 274 1378 288" stroke="url(#accent)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="1248" cy="324" r="38" fill="#38bdf8" opacity="0.16"/>
+    <path d="M1248 300L1264 324L1248 348L1232 324Z" fill="#34d399"/>
+  </g>
+  <text x="136" y="518" fill="#e5e7eb" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="44" font-weight="700">RemoteKeys</text>
+  <text x="136" y="548" fill="#94a3b8" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="18" font-weight="500">Wireless keyboard, trackpad, and terminal control for your desktop</text>
+</svg>
