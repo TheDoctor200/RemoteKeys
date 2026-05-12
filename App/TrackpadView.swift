@@ -15,7 +15,7 @@ struct TrackpadView: View {
       HStack(spacing: 12) {
         Picker("Mode", selection: $model.trackpadMode) {
           ForEach(TrackpadMode.allCases, id: \.self) { mode in
-            Label(mode.rawValue, systemImage: mode == .cursor ? "cursorarrow" : "arrow.up.and.down.and.arrow.left.and.right")
+            Label(mode.rawValue, systemImage: mode == .cursor ? "cursorarrow" : (mode == .scroll ? "arrow.up.and.down.and.arrow.left.and.right" : "hand.draw"))
               .tag(mode)
           }
         }
@@ -67,11 +67,11 @@ struct TrackpadView: View {
 
         // Mode hint
         VStack(spacing: 6) {
-          Image(systemName: model.trackpadMode == .cursor ? "cursorarrow.rays" : "arrow.up.and.down.and.arrow.left.and.right")
+          Image(systemName: model.trackpadMode == .cursor ? "cursorarrow.rays" : (model.trackpadMode == .scroll ? "arrow.up.and.down.and.arrow.left.and.right" : "hand.draw"))
             .font(.system(size: 32))
             .foregroundStyle(.primary.opacity(0.06))
 
-          Text(model.trackpadMode == .cursor ? "Move cursor" : "Scroll")
+          Text(model.trackpadMode == .cursor ? "Move cursor" : (model.trackpadMode == .scroll ? "Scroll" : "Drag"))
             .font(.system(size: 12, weight: .medium))
             .foregroundStyle(.primary.opacity(0.12))
         }
@@ -110,18 +110,21 @@ struct TrackpadView: View {
               let dy = val.translation.height - last.translation.height
               if model.trackpadMode == .cursor {
                 model.sendMouseMove(dx: dx, dy: dy)
+              } else if model.trackpadMode == .drag {
+                model.sendMouseDrag(dx: dx, dy: dy)
               } else {
                 model.sendScroll(dx: -dx * 0.6, dy: -dy * 0.6)
               }
             }
             lastDrag = val
-            withAnimation(.linear(duration: 0.05)) {
-              pointerPos = val.location
-              showPointer = true
-            }
+            pointerPos = val.location
+            showPointer = true
           }
           .onEnded { _ in
             lastDrag = nil
+            if model.trackpadMode == .drag {
+              model.sendMouseDragEnd()
+            }
             withAnimation(.easeOut(duration: 0.3)) { showPointer = false }
           }
           .simultaneously(with:
@@ -150,8 +153,8 @@ struct TrackpadView: View {
 
       // Button bar
       HStack(spacing: 8) {
-        TrackpadActionButton(label: "Click", icon: "cursorarrow.click", hapticTrigger: $tapHaptic) {
-          model.sendClick()
+        TrackpadActionButton(label: "Left Click", icon: "cursorarrow.click", hapticTrigger: $tapHaptic) {
+          model.sendClick(button: "left")
         }
         TrackpadActionButton(label: "Right Click", icon: "cursorarrow.click.2", hapticTrigger: $tapHaptic) {
           model.sendClick(button: "right")

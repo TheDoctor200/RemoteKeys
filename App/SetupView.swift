@@ -4,6 +4,9 @@ struct SetupView: View {
   @Bindable var model: RemoteControlModel
   @Environment(\.dismiss) private var dismiss
 
+  @AppStorage("appTheme") private var appTheme = 0 // 0 = System, 1 = Light, 2 = Dark
+  @AppStorage("appTint") private var appTint = 0 // 0 = Blue, 1 = Red, 2 = Green, 3 = Orange, 4 = Purple
+
   var body: some View {
     NavigationStack {
       Form {
@@ -109,6 +112,33 @@ struct SetupView: View {
           .padding(.vertical, 4)
         } header: {
           Text("Trackpad")
+        }
+
+        // Appearance
+        Section {
+          Picker("Theme", selection: $appTheme) {
+            Text("System").tag(0)
+            Text("Light").tag(1)
+            Text("Dark").tag(2)
+          }
+          Picker("Accent Color", selection: $appTint) {
+            Text("Blue").tag(0)
+            Text("Red").tag(1)
+            Text("Green").tag(2)
+            Text("Orange").tag(3)
+            Text("Purple").tag(4)
+            Text("Pink").tag(5)
+            Text("Yellow").tag(6)
+            Text("Mint").tag(7)
+            Text("Cyan").tag(8)
+            Text("Indigo").tag(9)
+            Text("Teal").tag(10)
+            Text("Brown").tag(11)
+            Text("Gray").tag(12)
+            Text("Black / White").tag(13)
+          }
+        } header: {
+          Text("Appearance")
         }
 
         // Actions

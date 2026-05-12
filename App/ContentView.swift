@@ -4,6 +4,9 @@ struct ContentView: View {
   @State private var model = RemoteControlModel()
   @State private var showSetup = false
 
+  @AppStorage("appTheme") private var appTheme = 0
+  @AppStorage("appTint") private var appTint = 0
+
   var body: some View {
     GeometryReader { geo in
       ZStack(alignment: .bottom) {
@@ -39,6 +42,36 @@ struct ContentView: View {
     .sheet(isPresented: $showSetup) {
       SetupView(model: model)
         .presentationDetents([.medium, .large])
+    }
+    .preferredColorScheme(colorScheme)
+    .tint(tintColor)
+  }
+
+  private var colorScheme: ColorScheme? {
+    switch appTheme {
+    case 1: return .light
+    case 2: return .dark
+    default: return nil
+    }
+  }
+
+  private var tintColor: Color {
+    switch appTint {
+    case 0: return .blue
+    case 1: return .red
+    case 2: return .green
+    case 3: return .orange
+    case 4: return .purple
+    case 5: return .pink
+    case 6: return .yellow
+    case 7: return .mint
+    case 8: return .cyan
+    case 9: return .indigo
+    case 10: return .teal
+    case 11: return .brown
+    case 12: return .gray
+    case 13: return .primary
+    default: return .blue
     }
   }
 

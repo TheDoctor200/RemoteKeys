@@ -29,6 +29,7 @@ class ConnectionManager {
     webSocketTask?.resume()
     active = true
     onConnected?()
+    send(["type": "ping"])
     startPinging()
     receiveLoop()
   }
@@ -70,15 +71,26 @@ class ConnectionManager {
     let type = json["type"] as? String
     if type == "info" {
       onDeviceInfo?(json)
-    } else if type == "output", let line = json["line"] as? String {
-      onTerminalOutput?(line)
+    } else if type == "output" {
+      if let lines = json["lines"] as? [String] {
+        for line in lines where !line.isEmpty {
+          onTerminalOutput?(line)
+        }
+      } else if let output = json["output"] as? String {
+        for line in output.split(separator: "\n", omittingEmptySubsequences: false) {
+          onTerminalOutput?(String(line))
+        }
+      } else if let line = json["line"] as? String {
+        onTerminalOutput?(line)
+      }
     }
   }
 
   private func startPinging() {
-    pingTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+    pingTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
       guard let self, self.active else { return }
       self.lastPingDate = Date()
+      self.send(["type": "ping"])
       self.webSocketTask?.sendPing { [weak self] error in
         guard let self, error == nil, let start = self.lastPingDate else { return }
         let ms = max(1, Int(Date().timeIntervalSince(start) * 1000))
