@@ -13,6 +13,7 @@ RemoteKeys turns your phone into a clean wireless control surface for your Mac o
 ## What You Get
 
 - Keyboard control with modifier keys, function key access, and caps-lock aware input.
+- Automatic macOS keyboard layout detection so the on-screen keyboard matches the connected Mac.
 - Trackpad-style cursor movement, scrolling, zooming, dragging, and tap actions.
 - Live connection status with latency, device info, and terminal output streaming.
 - Theme and accent customization for a polished app appearance.
@@ -62,6 +63,8 @@ By default, the server listens on `ws://localhost:8765`.
 ## How It Works
 
 RemoteKeys sends JSON commands over WebSocket to the companion server. The client handles input locally, then streams events such as `key`, `move`, `scroll`, `drag`, `click`, `dblclick`, and `terminal` to the desktop machine.
+
+When connected to macOS, the server detects the active keyboard layout and sends the translated row labels back to the app so taps map to the correct physical key codes.
 
 ## Tips
 

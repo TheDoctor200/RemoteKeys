@@ -87,6 +87,10 @@ struct HeaderView: View {
               .foregroundStyle(.secondary)
           }
         }
+
+        Text(model.keyboardLayout.displayName)
+          .font(.system(size: 10, weight: .medium))
+          .foregroundStyle(.secondary)
       } else {
         Text("—")
           .font(.system(size: 11))
@@ -101,15 +105,14 @@ struct HeaderView: View {
   private var actionButtons: some View {
     HStack(spacing: 14) {
       Button {
-        withAnimation(.snappy(duration: 0.3)) {
-          model.showTerminal.toggle()
-        }
+        model.toggleConnection()
       } label: {
-        Image(systemName: "terminal")
+        Image(systemName: model.connectionActionSystemImage)
           .font(.system(size: 17))
-          .foregroundStyle(model.showTerminal ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+          .foregroundStyle(connectionActionColor)
       }
-      .accessibilityLabel("Toggle Terminal")
+      .accessibilityLabel(model.connectionActionLabel)
+      .disabled(model.connectionActionDisabled)
 
       Button(action: onSetupTap) {
         Image(systemName: "gear")
@@ -153,5 +156,16 @@ struct HeaderView: View {
     if model.batteryLevel < 0.2 { return .red }
     if model.batteryLevel < 0.4 { return .orange }
     return .green
+  }
+
+  private var connectionActionColor: Color {
+    switch model.connectionState {
+    case .connected:
+      return .green
+    case .connecting:
+      return .yellow
+    case .disconnected:
+      return .secondary
+    }
   }
 }

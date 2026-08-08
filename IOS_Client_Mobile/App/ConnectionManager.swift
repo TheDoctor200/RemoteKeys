@@ -5,7 +5,7 @@ class ConnectionManager {
   var onDisconnected: (() -> Void)?
   var onLatencyUpdate: ((Int) -> Void)?
   var onDeviceInfo: (([String: Any]) -> Void)?
-  var onTerminalOutput: ((String) -> Void)?
+  var onStatusUpdate: (([String: Any]) -> Void)?
 
   private let host: String
   private let port: Int
@@ -71,18 +71,8 @@ class ConnectionManager {
     let type = json["type"] as? String
     if type == "info" {
       onDeviceInfo?(json)
-    } else if type == "output" {
-      if let lines = json["lines"] as? [String] {
-        for line in lines where !line.isEmpty {
-          onTerminalOutput?(line)
-        }
-      } else if let output = json["output"] as? String {
-        for line in output.split(separator: "\n", omittingEmptySubsequences: false) {
-          onTerminalOutput?(String(line))
-        }
-      } else if let line = json["line"] as? String {
-        onTerminalOutput?(line)
-      }
+    } else if type == "status" {
+      onStatusUpdate?(json)
     }
   }
 

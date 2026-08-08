@@ -145,24 +145,24 @@ struct SetupView: View {
         Section {
           if model.connectionState != .connected {
             Button {
-              model.connect()
+              model.toggleConnection()
               dismiss()
             } label: {
               HStack {
                 Spacer()
-                Label("Connect", systemImage: "cable.connector")
+                Label(model.connectionActionLabel, systemImage: model.connectionActionSystemImage)
                   .fontWeight(.semibold)
                 Spacer()
               }
             }
-            .disabled(model.hostAddress.isEmpty)
+            .disabled(model.connectionActionDisabled)
           } else {
             Button(role: .destructive) {
-              model.disconnect()
+              model.toggleConnection()
             } label: {
               HStack {
                 Spacer()
-                Label("Disconnect", systemImage: "cable.connector.slash")
+                Label(model.connectionActionLabel, systemImage: model.connectionActionSystemImage)
                   .fontWeight(.semibold)
                 Spacer()
               }

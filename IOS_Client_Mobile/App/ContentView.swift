@@ -30,14 +30,7 @@ struct ContentView: View {
             .padding(.bottom, 8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-
-        // Terminal overlay
-        if model.showTerminal {
-          TerminalBarView(model: model)
-            .transition(.move(edge: .bottom).combined(with: .opacity))
-        }
       }
-      .animation(.snappy(duration: 0.3), value: model.showTerminal)
     }
     .sheet(isPresented: $showSetup) {
       SetupView(model: model)

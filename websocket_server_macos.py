@@ -2,21 +2,17 @@
 """
 RemoteKeys WebSocket Server
 Companion server for the RemoteKeys macOS app.
-Listens on ws://localhost:8765 and handles keyboard, mouse, trackpad, and terminal commands.
+Listens on ws://localhost:8765 and handles keyboard, mouse, and trackpad commands.
 """
 
 import asyncio
 import json
-import subprocess
 import sys
 import signal
 import threading
 import logging
 import os
-import uuid
 import socket
-from datetime import datetime
-from pathlib import Path
 
 import websockets
 import time
@@ -56,8 +52,6 @@ logging.getLogger('websockets').setLevel(logging.WARNING)
 
 # Global state
 connected_clients = set()
-terminal_output_buffer = []
-MAX_TERMINAL_LINES = 200
 current_trackpad_mode = "cursor"  # cursor or scroll
 # Cached device info updated in background to avoid blocking the event loop
 cached_device_info = {}
@@ -67,7 +61,6 @@ _drag_state = {
     "active": False,
     "button": "left",
 }
-terminal_session = None
 
 # Per-client device-info cadence state to avoid repeatedly sending name/power payloads.
 INFO_THROTTLE_SECONDS = float(os.environ.get("REK_INFO_THROTTLE_SECONDS", "20"))
@@ -94,11 +87,133 @@ KEYCODE_MAP = {
     'left': 123, 'right': 124, 'down': 125, 'up': 126,
 }
 
+KEYBOARD_LAYOUT_KEYCODES = {
+    'numberRow': [18, 19, 20, 21, 23, 22, 26, 28, 25, 29],
+    'row1': [12, 13, 14, 15, 17, 16, 32, 34, 31, 35],
+    'row2': [0, 1, 2, 3, 5, 4, 38, 40, 37],
+    'row3': [6, 7, 8, 9, 11, 45, 46],
+}
+
+KEYBOARD_LAYOUT_FALLBACK_ROWS = {
+    'numberRow': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+    'row1': ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+    'row2': ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+    'row3': ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
+}
+
+_keyboard_layout_cache = {
+    'updated_at': 0.0,
+    'payload': None,
+    'keycode_map': {},
+}
+_keyboard_layout_lock = threading.Lock()
+
+
+def _translate_keycode_to_label(key_code: int) -> str:
+    if not HAS_QUARTZ:
+        return ''
+
+    try:
+        event = Quartz.CGEventCreateKeyboardEvent(None, key_code, True)
+        if event is None:
+            return ''
+
+        result = Quartz.CGEventKeyboardGetUnicodeString(event, 16, None, None)
+        if isinstance(result, tuple) and len(result) >= 2:
+            text = result[1]
+        else:
+            text = result
+
+        if not text:
+            return ''
+
+        text = str(text).strip()
+        if len(text) != 1:
+            return ''
+
+        return text.lower()
+    except Exception:
+        return ''
+
+
+def _build_keyboard_layout_payload():
+    rows = {}
+    keycode_map = {}
+
+    for row_name, key_codes in KEYBOARD_LAYOUT_KEYCODES.items():
+        fallback_row = KEYBOARD_LAYOUT_FALLBACK_ROWS.get(row_name, [])
+        row_labels = []
+
+        for index, key_code in enumerate(key_codes):
+            fallback_label = fallback_row[index] if index < len(fallback_row) else ''
+            label = _translate_keycode_to_label(key_code) or fallback_label
+            row_labels.append(label)
+
+            if label:
+                keycode_map.setdefault(label.lower(), key_code)
+            if fallback_label:
+                keycode_map.setdefault(fallback_label.lower(), key_code)
+
+        rows[row_name] = row_labels
+
+    signature = '/'.join([
+        ''.join(rows.get('row1', [])),
+        ''.join(rows.get('row2', [])),
+        ''.join(rows.get('row3', [])),
+    ])
+
+    known_layouts = {
+        'qwertyuiop/asdfghjkl/zxcvbnm': ('us', 'US / QWERTY'),
+        'azertyuiop/qsdfghjklm/wxcvbn': ('azerty', 'French / AZERTY'),
+    }
+    identifier, display_name = known_layouts.get(signature, ('detected', 'Detected Keyboard Layout'))
+
+    payload = {
+        'identifier': identifier,
+        'name': display_name,
+        'rows': rows,
+    }
+    return payload, keycode_map
+
+
+def _refresh_keyboard_layout_cache(force: bool = False):
+    now = time.monotonic()
+    with _keyboard_layout_lock:
+        payload = _keyboard_layout_cache.get('payload')
+        if not force and payload is not None and (now - _keyboard_layout_cache.get('updated_at', 0.0)) < 5.0:
+            return payload
+
+        payload, keycode_map = _build_keyboard_layout_payload()
+        _keyboard_layout_cache['updated_at'] = now
+        _keyboard_layout_cache['payload'] = payload
+        _keyboard_layout_cache['keycode_map'] = keycode_map
+        return payload
+
+
+def get_keyboard_layout_payload():
+    payload = _refresh_keyboard_layout_cache()
+    if payload is None:
+        return {
+            'identifier': 'fallback',
+            'name': 'US / QWERTY',
+            'rows': dict(KEYBOARD_LAYOUT_FALLBACK_ROWS),
+        }
+    return payload
+
+
+def get_keyboard_layout_keycode_map():
+    _refresh_keyboard_layout_cache()
+    with _keyboard_layout_lock:
+        return dict(_keyboard_layout_cache.get('keycode_map', {}))
+
 
 def key_name_to_keycode(name: str):
     if not name:
         return None
     n = str(name).lower()
+    layout_map = get_keyboard_layout_keycode_map()
+    if n in layout_map:
+        return layout_map[n]
     if n in KEYCODE_MAP:
         return KEYCODE_MAP[n]
     # Common synonyms and literal key names from the client.
@@ -267,7 +382,28 @@ def build_device_info_payload(include_name: bool = False):
         payload["battery"] = info.get("battery")
     elif "battery_percentage" in info:
         payload["battery"] = info.get("battery_percentage")
+    if include_name:
+        payload["keyboard_layout"] = get_keyboard_layout_payload()
     return payload
+
+
+def build_keyboard_status_payload():
+    return {
+        "type": "status",
+        "caps_lock": get_caps_lock_state(),
+    }
+
+
+def get_caps_lock_state() -> bool:
+    """Return the current Caps Lock state from the active macOS session."""
+    if not HAS_QUARTZ:
+        return False
+
+    try:
+        flags = Quartz.CGEventSourceFlagsState(Quartz.kCGEventSourceStateCombinedSessionState)
+        return bool(flags & Quartz.kCGEventFlagMaskAlphaShift)
+    except Exception:
+        return False
 
 
 class SystemController:
@@ -506,11 +642,6 @@ class SystemController:
             logger.error(f"Error clicking mouse: {e}")
 
     @staticmethod
-    async def execute_terminal_command(command: str, websocket=None):
-        """Execute a shell command in a persistent shell session and stream output."""
-        return await terminal_session.run_command(command, websocket)
-
-    @staticmethod
     def get_device_info():
         """Gather device information."""
         # Return a thread-safe copy of the latest cached device info.
@@ -541,10 +672,6 @@ async def _client_action_worker(websocket, action_queue):
                 await _run_controller_action(SystemController.release_drag, action[1])
             elif kind == "click":
                 await _run_controller_action(SystemController.handle_click, action[1], action[2])
-            elif kind == "terminal":
-                # Run terminal command in a detached task so command streaming
-                # doesn't block movement/input actions for this client.
-                asyncio.create_task(SystemController.execute_terminal_command(action[1], websocket))
         except Exception as e:
             logger.error(f"Controller worker failed for {websocket.remote_address}: {e}")
         finally:
@@ -567,90 +694,6 @@ def _enqueue_client_action(action_queue, action):
             pass
 
 
-class TerminalSession:
-    """Persistent shell session that streams command output and keeps state between commands."""
-
-    def __init__(self):
-        self.process = None
-        self.lock = asyncio.Lock()
-        self.ready = False
-
-    async def ensure_started(self):
-        if self.process and self.process.returncode is None:
-            return
-
-        env = os.environ.copy()
-        env.setdefault("TERM", "dumb")
-        env.setdefault("PS1", "")
-        env.setdefault("PROMPT", "")
-        env.setdefault("RPROMPT", "")
-
-        self.process = await asyncio.create_subprocess_exec(
-            "/bin/zsh",
-            "-f",
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT,
-            env=env,
-        )
-        self.ready = True
-
-    async def run_command(self, command: str, websocket=None):
-        await self.ensure_started()
-
-        async with self.lock:
-            marker = f"__REK_DONE_{uuid.uuid4().hex}__"
-            wrapped_command = f"{command}\nprintf '\\n{marker}:%s\\n' $?\n"
-
-            assert self.process is not None and self.process.stdin is not None and self.process.stdout is not None
-            self.process.stdin.write(wrapped_command.encode("utf-8"))
-            await self.process.stdin.drain()
-
-            collected_lines = []
-            while True:
-                raw_line = await self.process.stdout.readline()
-                if not raw_line:
-                    break
-
-                line = raw_line.decode("utf-8", errors="replace").rstrip("\r\n")
-                if line.startswith(marker + ":"):
-                    break
-
-                collected_lines.append(line)
-                terminal_output_buffer.append(line)
-                if len(terminal_output_buffer) > MAX_TERMINAL_LINES:
-                    terminal_output_buffer.pop(0)
-
-                if websocket is not None:
-                    # If this websocket has a per-client buffer, append into it
-                    # and let the flusher send batched output. Otherwise, send
-                    # immediate single-line updates (best-effort compatibility).
-                    try:
-                        buf = per_client_buffers.get(websocket)
-                        if buf is not None:
-                            lock = buf.get("lock")
-                            if lock is not None:
-                                async with lock:
-                                    buf.setdefault("terminal", []).append(line)
-                            else:
-                                buf.setdefault("terminal", []).append(line)
-                        else:
-                            response = {"type": "output", "line": line}
-                            await websocket.send(json.dumps(response))
-                    except Exception:
-                        # Fallback to direct send if buffering fails
-                        try:
-                            response = {"type": "output", "line": line}
-                            await websocket.send(json.dumps(response))
-                        except Exception:
-                            pass
-
-            return "\n".join(collected_lines) + ("\n" if collected_lines else "")
-
-
-terminal_session = TerminalSession()
-
-
 async def handle_client(websocket):
     """Handle a connected WebSocket client."""
     client_id = f"{websocket.remote_address[0]}:{websocket.remote_address[1]}"
@@ -664,7 +707,6 @@ async def handle_client(websocket):
         "scroll": {"dx": 0, "dy": 0},
         "actions": asyncio.Queue(maxsize=256),
         "lock": asyncio.Lock(),
-        "terminal": [],
         "mode": "cursor",
         "flusher": None,
         "worker": None,
@@ -678,7 +720,6 @@ async def handle_client(websocket):
             buf = per_client_buffers.get(ws)
             if not buf:
                 continue
-            batched_terminal_lines = None
             async with buf["lock"]:
                 m = buf["move"]
                 if m["dx"] != 0 or m["dy"] != 0:
@@ -701,24 +742,6 @@ async def handle_client(websocket):
                     s["dx"] = 0
                     s["dy"] = 0
                     _enqueue_client_action(buf["actions"], ("scroll", dx, dy))
-
-                # Batch terminal output to avoid many small websocket frames
-                try:
-                    tbuf = buf.get("terminal")
-                    if tbuf:
-                        batched_terminal_lines = list(tbuf)
-                        if batched_terminal_lines:
-                            tbuf.clear()
-                except Exception:
-                    # Best-effort; don't let terminal batching break the flusher
-                    pass
-
-            if batched_terminal_lines:
-                try:
-                    payload = {"type": "output_batch", "lines": batched_terminal_lines}
-                    await ws.send(json.dumps(payload))
-                except Exception:
-                    pass
 
     per_client_buffers[websocket]["worker"] = asyncio.create_task(
         _client_action_worker(websocket, per_client_buffers[websocket]["actions"])
@@ -819,15 +842,13 @@ async def handle_client(websocket):
                         async with buf["lock"]:
                             buf["mode"] = mode
                     
-                elif message_type == "terminal":
-                    command = data.get("command", "")
-                    if command:
-                        _enqueue_client_action(per_client_buffers[websocket]["actions"], ("terminal", command))
-                
                 elif message_type == "ping":
                     # Respond to ping with pong
                     response = {"type": "pong"}
                     await websocket.send(json.dumps(response))
+
+                    status = build_keyboard_status_payload()
+                    await websocket.send(json.dumps(status))
 
                     # Send device name once, then throttle CPU/battery updates.
                     buf = per_client_buffers.get(websocket)

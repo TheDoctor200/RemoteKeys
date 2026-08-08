@@ -56,6 +56,48 @@ enum TrackpadMode: String, CaseIterable {
   case drag = "Drag"
 }
 
+struct KeyboardLayoutProfile: Equatable {
+  var identifier: String
+  var displayName: String
+  var numberRow: [String]
+  var row1: [String]
+  var row2: [String]
+  var row3: [String]
+
+  static let standard = KeyboardLayoutProfile(
+    identifier: "us",
+    displayName: "US / QWERTY",
+    numberRow: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
+    row1: ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
+    row2: ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
+    row3: ["z", "x", "c", "v", "b", "n", "m"]
+  )
+
+  static func fromInfo(_ info: [String: Any]) -> KeyboardLayoutProfile? {
+    guard let layout = info["keyboard_layout"] as? [String: Any] else { return nil }
+    guard let rows = layout["rows"] as? [String: Any] else { return nil }
+    guard
+      let numberRow = rows["numberRow"] as? [String],
+      let row1 = rows["row1"] as? [String],
+      let row2 = rows["row2"] as? [String],
+      let row3 = rows["row3"] as? [String]
+    else {
+      return nil
+    }
+
+    let identifier = (layout["identifier"] as? String) ?? "detected"
+    let displayName = (layout["name"] as? String) ?? "Detected Keyboard Layout"
+    return KeyboardLayoutProfile(
+      identifier: identifier,
+      displayName: displayName,
+      numberRow: numberRow,
+      row1: row1,
+      row2: row2,
+      row3: row3
+    )
+  }
+}
+
 // MARK: - Model
 
 @Observable
@@ -84,6 +126,7 @@ class RemoteControlModel {
   var activeModifiers: Set<ModifierKey> = []
   var showFnKeys: Bool = false
   var capsLock: Bool = false
+  var keyboardLayout: KeyboardLayoutProfile = .standard
 
   @ObservationIgnored
   private var shiftResetWorkItem: DispatchWorkItem?
@@ -107,10 +150,6 @@ class RemoteControlModel {
 
   // Trackpad
   var trackpadMode: TrackpadMode = .cursor
-
-  // Terminal
-  var showTerminal: Bool = false
-  var terminalOutput: [TerminalLine] = []
 
   private var manager: ConnectionManager?
 
@@ -137,13 +176,8 @@ class RemoteControlModel {
     manager?.onDeviceInfo = { [weak self] info in
       DispatchQueue.main.async { self?.applyDeviceInfo(info) }
     }
-    manager?.onTerminalOutput = { [weak self] line in
-      DispatchQueue.main.async {
-        self?.terminalOutput.append(TerminalLine(text: line, isOutput: true))
-        if (self?.terminalOutput.count ?? 0) > 200 {
-          self?.terminalOutput.removeFirst()
-        }
-      }
+    manager?.onStatusUpdate = { [weak self] status in
+      DispatchQueue.main.async { self?.applyStatus(status) }
     }
     manager?.connect()
   }
@@ -154,6 +188,34 @@ class RemoteControlModel {
     connectionState = .disconnected
     connectionType = .none
     latency = 0
+  }
+
+  func toggleConnection() {
+    if isConnectionActive {
+      disconnect()
+    } else {
+      connect()
+    }
+  }
+
+  var canConnect: Bool {
+    !hostAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && Int(hostPort) != nil
+  }
+
+  var isConnectionActive: Bool {
+    connectionState == .connected || connectionState == .connecting
+  }
+
+  var connectionActionLabel: String {
+    isConnectionActive ? "Disconnect" : "Connect"
+  }
+
+  var connectionActionSystemImage: String {
+    isConnectionActive ? "cable.connector.slash" : "cable.connector"
+  }
+
+  var connectionActionDisabled: Bool {
+    connectionState == .disconnected && !canConnect
   }
 
   func sendKey(_ key: String) {
@@ -197,11 +259,6 @@ class RemoteControlModel {
   func sendMouseDragEnd() {
     flushTrackpadDeltas()
     send(["type": "drop", "button": "left"])
-  }
-
-  func sendTerminalCommand(_ command: String) {
-    send(["type": "terminal", "command": command])
-    terminalOutput.append(TerminalLine(text: "$ " + command, isOutput: false))
   }
 
   func toggleModifier(_ key: ModifierKey) {
@@ -277,6 +334,10 @@ class RemoteControlModel {
       macName = name
     }
 
+    if let layout = KeyboardLayoutProfile.fromInfo(info) {
+      keyboardLayout = layout
+    }
+
     if let battery = (info["battery"] as? Double) ?? (info["battery_percentage"] as? Double) {
       batteryLevel = battery > 1.0 ? battery / 100.0 : battery
     }
@@ -285,10 +346,10 @@ class RemoteControlModel {
       cpuUsage = cpu > 1.0 ? cpu / 100.0 : cpu
     }
   }
-}
 
-struct TerminalLine: Identifiable {
-  let id = UUID()
-  var text: String
-  var isOutput: Bool
+  private func applyStatus(_ status: [String: Any]) {
+    if let caps = status["caps_lock"] as? Bool {
+      capsLock = caps
+    }
+  }
 }

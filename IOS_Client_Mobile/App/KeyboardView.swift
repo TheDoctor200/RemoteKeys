@@ -36,30 +36,6 @@ struct KeyboardView: View {
     VKey(label: "F11", value: "f11"), VKey(label: "F12", value: "f12"),
   ]
 
-  private let numRow: [VKey] = [
-    .char("1"), .char("2"), .char("3"), .char("4"), .char("5"),
-    .char("6"), .char("7"), .char("8"), .char("9"), .char("0"),
-    .special("⌫", "backspace", flex: 1.5, icon: "delete.backward.fill"),
-  ]
-
-  private let row1: [VKey] = [
-    .char("q"), .char("w"), .char("e"), .char("r"), .char("t"),
-    .char("y"), .char("u"), .char("i"), .char("o"), .char("p"),
-  ]
-
-  private let row2: [VKey] = [
-    .char("a"), .char("s"), .char("d"), .char("f"), .char("g"),
-    .char("h"), .char("j"), .char("k"), .char("l"),
-    .special("↵", "return", flex: 1.5, icon: "return"),
-  ]
-
-  private let row3: [VKey] = [
-    .mod(.shift, flex: 1.5),
-    .char("z"), .char("x"), .char("c"), .char("v"),
-    .char("b"), .char("n"), .char("m"),
-    .mod(.shift, flex: 1.5),
-  ]
-
   private let row4: [VKey] = [
     .mod(.control, flex: 1.3),
     .mod(.option, flex: 1.3),
@@ -120,7 +96,7 @@ struct KeyboardView: View {
           .transition(.move(edge: .top).combined(with: .opacity))
       }
 
-      keyRow(numRow)
+      keyRow(numberRow)
       keyRow(row1)
       keyRow(row2)
       keyRow(row3)
@@ -138,6 +114,30 @@ struct KeyboardView: View {
 
   // Arrow keys section has 4 equal keys — compute a fixed width
   private var keyRowArrowWidth: CGFloat { 4 * 32 + 3 * 4 }
+
+  private var numberRow: [VKey] {
+    model.keyboardLayout.numberRow.map { .char($0) } + [
+      .special("⌫", "backspace", flex: 1.5, icon: "delete.backward.fill"),
+    ]
+  }
+
+  private var row1: [VKey] {
+    model.keyboardLayout.row1.map { .char($0) }
+  }
+
+  private var row2: [VKey] {
+    model.keyboardLayout.row2.map { .char($0) } + [
+      .special("↵", "return", flex: 1.5, icon: "return"),
+    ]
+  }
+
+  private var row3: [VKey] {
+    [
+      .mod(.shift, flex: 1.5),
+    ] + model.keyboardLayout.row3.map { .char($0) } + [
+      .mod(.shift, flex: 1.5),
+    ]
+  }
 
   private func keyRow(_ keys: [VKey]) -> some View {
     GeometryReader { geo in
