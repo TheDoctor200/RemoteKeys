@@ -5,7 +5,7 @@
 [![WebSocket](https://img.shields.io/badge/connection-WebSocket-2563eb?style=for-the-badge&logo=websocket&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
 
 <p align="center">
-	<img src="App/Assets.xcassets/AppIcon.appiconset/ios-1024.png" alt="RemoteKeys app icon" width="180" />
+	<img src="IOS_CLient_Mobile/App/Assets.xcassets/AppIcon.appiconset/ios-1024.png" alt="RemoteKeys app icon" width="180" />
 </p>
 
 RemoteKeys turns your phone into a clean wireless control surface for your Mac or PC. Use the SwiftUI app to type, move the cursor, scroll, drag, and send terminal commands over a local WebSocket connection.
