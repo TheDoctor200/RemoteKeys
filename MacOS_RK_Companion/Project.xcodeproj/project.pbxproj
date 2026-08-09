@@ -1,0 +1,377 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		00E0FEFED49ADA53814B8572 /* WebSocketServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5712CFD7523B6D77ABB77CCA /* WebSocketServer.swift */; };
+		02DDDD602484F1643B055C79 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1A2F579A6F79C62DDA0571 /* AppDelegate.swift */; };
+		16DD22B12184735B88679BFD /* SystemInputController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5AD91482A107CFE4D8A452 /* SystemInputController.swift */; };
+		2979AA8DD98E6FBAD17B094C /* KeyCodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D5B2FD42C25491253F893E1 /* KeyCodeMap.swift */; };
+		32C4EF18985FDD685CCE4614 /* QRCodeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E464EB3D8C8C1A098AF9D272 /* QRCodeGenerator.swift */; };
+		3D35E16DB7C70E35CA58AF3C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3797E591F302ECC0AA2FC607 /* Assets.xcassets */; };
+		4AC53AC3B5856D02D66A607C /* DeviceStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = E34558AFD13E6F9820BA462D /* DeviceStatus.swift */; };
+		4E39465B49B91AE9189DEB44 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC99F5A67CB1716796AFC47 /* AppSettings.swift */; };
+		584958647E685F5378DD542C /* KeyboardLayoutInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF0A0CB8F6CBC9B26088105 /* KeyboardLayoutInfo.swift */; };
+		8BEAE3F3B7B22AFB1335A4CC /* QRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB304F69839A462E2089D6D /* QRCodeView.swift */; };
+		AE984CF1322EBE52D09785BE /* NetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 383FE2D72631225B58FFAB0B /* NetworkInfo.swift */; };
+		B068EDF9E03614DFA975457A /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57A94986ECF5F417B9BBCD3 /* MenuBarView.swift */; };
+		D9031BFE100249468BC9BE3A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74F16C0358BDBE96493C540D /* ContentView.swift */; };
+		DAB01DC26606023DD9D485D8 /* LoginItemManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D806AA0AD96DE7A934574A3B /* LoginItemManager.swift */; };
+		DACCF76A0AFA4E392AFC555C /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A23FE9033D40D51F8D6E6CC /* App.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0CC99F5A67CB1716796AFC47 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		1CF0A0CB8F6CBC9B26088105 /* KeyboardLayoutInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardLayoutInfo.swift; sourceTree = "<group>"; };
+		3797E591F302ECC0AA2FC607 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		383FE2D72631225B58FFAB0B /* NetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInfo.swift; sourceTree = "<group>"; };
+		3DB304F69839A462E2089D6D /* QRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeView.swift; sourceTree = "<group>"; };
+		5712CFD7523B6D77ABB77CCA /* WebSocketServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketServer.swift; sourceTree = "<group>"; };
+		5A23FE9033D40D51F8D6E6CC /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
+		6353E052A2C567FF3F2BE32C /* RemoteKeys Companion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "RemoteKeys Companion.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		74F16C0358BDBE96493C540D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		7F1A2F579A6F79C62DDA0571 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		8D5B2FD42C25491253F893E1 /* KeyCodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCodeMap.swift; sourceTree = "<group>"; };
+		A57A94986ECF5F417B9BBCD3 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		D806AA0AD96DE7A934574A3B /* LoginItemManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemManager.swift; sourceTree = "<group>"; };
+		DA5AD91482A107CFE4D8A452 /* SystemInputController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInputController.swift; sourceTree = "<group>"; };
+		E34558AFD13E6F9820BA462D /* DeviceStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceStatus.swift; sourceTree = "<group>"; };
+		E464EB3D8C8C1A098AF9D272 /* QRCodeGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeGenerator.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		1F2DE413CF2CB54988158172 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				5A23FE9033D40D51F8D6E6CC /* App.swift */,
+				7F1A2F579A6F79C62DDA0571 /* AppDelegate.swift */,
+				3797E591F302ECC0AA2FC607 /* Assets.xcassets */,
+				74F16C0358BDBE96493C540D /* ContentView.swift */,
+				4BC6E213FBC318DD05121B50 /* Models */,
+				EF07323F36C87602FD4156BA /* Views */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		293D0FF827366B513839236A = {
+			isa = PBXGroup;
+			children = (
+				1F2DE413CF2CB54988158172 /* App */,
+				AC523591AC7BE9275003D2DB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4BC6E213FBC318DD05121B50 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				0CC99F5A67CB1716796AFC47 /* AppSettings.swift */,
+				E34558AFD13E6F9820BA462D /* DeviceStatus.swift */,
+				1CF0A0CB8F6CBC9B26088105 /* KeyboardLayoutInfo.swift */,
+				8D5B2FD42C25491253F893E1 /* KeyCodeMap.swift */,
+				D806AA0AD96DE7A934574A3B /* LoginItemManager.swift */,
+				383FE2D72631225B58FFAB0B /* NetworkInfo.swift */,
+				E464EB3D8C8C1A098AF9D272 /* QRCodeGenerator.swift */,
+				DA5AD91482A107CFE4D8A452 /* SystemInputController.swift */,
+				5712CFD7523B6D77ABB77CCA /* WebSocketServer.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AC523591AC7BE9275003D2DB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6353E052A2C567FF3F2BE32C /* RemoteKeys Companion.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		EF07323F36C87602FD4156BA /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A57A94986ECF5F417B9BBCD3 /* MenuBarView.swift */,
+				3DB304F69839A462E2089D6D /* QRCodeView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BD185E6281FBB6EC0D067160 /* RemoteKeys Companion */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0221406395CF219DC385A549 /* Build configuration list for PBXNativeTarget "RemoteKeys Companion" */;
+			buildPhases = (
+				0F560EE13D4A095772B4D2F3 /* Sources */,
+				68E6FD7F9B5021AB9B24DE9B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "RemoteKeys Companion";
+			packageProductDependencies = (
+			);
+			productName = "RemoteKeys Companion";
+			productReference = 6353E052A2C567FF3F2BE32C /* RemoteKeys Companion.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0FBAE303E3CFC2ABAC876A77 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = D91E14E36EC0B415578456F2 /* Build configuration list for PBXProject "Project" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 293D0FF827366B513839236A;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = AC523591AC7BE9275003D2DB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BD185E6281FBB6EC0D067160 /* RemoteKeys Companion */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		68E6FD7F9B5021AB9B24DE9B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3D35E16DB7C70E35CA58AF3C /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0F560EE13D4A095772B4D2F3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DACCF76A0AFA4E392AFC555C /* App.swift in Sources */,
+				02DDDD602484F1643B055C79 /* AppDelegate.swift in Sources */,
+				4E39465B49B91AE9189DEB44 /* AppSettings.swift in Sources */,
+				D9031BFE100249468BC9BE3A /* ContentView.swift in Sources */,
+				4AC53AC3B5856D02D66A607C /* DeviceStatus.swift in Sources */,
+				2979AA8DD98E6FBAD17B094C /* KeyCodeMap.swift in Sources */,
+				584958647E685F5378DD542C /* KeyboardLayoutInfo.swift in Sources */,
+				DAB01DC26606023DD9D485D8 /* LoginItemManager.swift in Sources */,
+				B068EDF9E03614DFA975457A /* MenuBarView.swift in Sources */,
+				AE984CF1322EBE52D09785BE /* NetworkInfo.swift in Sources */,
+				32C4EF18985FDD685CCE4614 /* QRCodeGenerator.swift in Sources */,
+				8BEAE3F3B7B22AFB1335A4CC /* QRCodeView.swift in Sources */,
+				16DD22B12184735B88679BFD /* SystemInputController.swift in Sources */,
+				00E0FEFED49ADA53814B8572 /* WebSocketServer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		036FCF7C4B48C154279F289D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		999683C4B5329A72D12AD584 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		9E1B4163B098A70DDECCE153 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "app.bitrig.new.df737fd4-7551-414e-bc92-e5d768df6ba1";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FEC41D11F214D3DDBFC799BB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "app.bitrig.new.df737fd4-7551-414e-bc92-e5d768df6ba1";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0221406395CF219DC385A549 /* Build configuration list for PBXNativeTarget "RemoteKeys Companion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9E1B4163B098A70DDECCE153 /* Debug */,
+				FEC41D11F214D3DDBFC799BB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D91E14E36EC0B415578456F2 /* Build configuration list for PBXProject "Project" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				999683C4B5329A72D12AD584 /* Debug */,
+				036FCF7C4B48C154279F289D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0FBAE303E3CFC2ABAC876A77 /* Project object */;
+}

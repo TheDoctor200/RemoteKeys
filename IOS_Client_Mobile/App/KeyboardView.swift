@@ -96,10 +96,9 @@ struct KeyboardView: View {
           .transition(.move(edge: .top).combined(with: .opacity))
       }
 
-      keyRow(numberRow)
-      keyRow(row1)
-      keyRow(row2)
-      keyRow(row3)
+      ForEach(Array(model.keyboardLayout.rows.enumerated()), id: \.element.id) { _, row in
+        keyRow(displayKeys(for: row))
+      }
 
       HStack(spacing: 5) {
         keyRow(row4)
@@ -115,28 +114,27 @@ struct KeyboardView: View {
   // Arrow keys section has 4 equal keys — compute a fixed width
   private var keyRowArrowWidth: CGFloat { 4 * 32 + 3 * 4 }
 
-  private var numberRow: [VKey] {
-    model.keyboardLayout.numberRow.map { .char($0) } + [
-      .special("⌫", "backspace", flex: 1.5, icon: "delete.backward.fill"),
-    ]
-  }
+  private func displayKeys(for row: KeyboardLayoutRow) -> [VKey] {
+    let keys = row.keys.map { VKey.char($0) }
 
-  private var row1: [VKey] {
-    model.keyboardLayout.row1.map { .char($0) }
-  }
-
-  private var row2: [VKey] {
-    model.keyboardLayout.row2.map { .char($0) } + [
-      .special("↵", "return", flex: 1.5, icon: "return"),
-    ]
-  }
-
-  private var row3: [VKey] {
-    [
-      .mod(.shift, flex: 1.5),
-    ] + model.keyboardLayout.row3.map { .char($0) } + [
-      .mod(.shift, flex: 1.5),
-    ]
+    switch row.name {
+    case "numberRow":
+      return keys + [
+        .special("⌫", "backspace", flex: 1.5, icon: "delete.backward.fill"),
+      ]
+    case "row2":
+      return keys + [
+        .special("↵", "return", flex: 1.5, icon: "return"),
+      ]
+    case "row3":
+      return [
+        .mod(.shift, flex: 1.5),
+      ] + keys + [
+        .mod(.shift, flex: 1.5),
+      ]
+    default:
+      return keys
+    }
   }
 
   private func keyRow(_ keys: [VKey]) -> some View {

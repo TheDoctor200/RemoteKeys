@@ -102,53 +102,9 @@ struct TrackpadView: View {
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .contentShape(RoundedRectangle(cornerRadius: 20))
-      .gesture(
-        DragGesture(minimumDistance: 2)
-          .onChanged { val in
-            if let last = lastDrag {
-              let dx = val.translation.width - last.translation.width
-              let dy = val.translation.height - last.translation.height
-              if model.trackpadMode == .cursor {
-                model.sendMouseMove(dx: dx, dy: dy)
-              } else if model.trackpadMode == .drag {
-                model.sendMouseDrag(dx: dx, dy: dy)
-              } else {
-                model.sendScroll(dx: -dx * 0.6, dy: -dy * 0.6)
-              }
-            }
-            lastDrag = val
-            pointerPos = val.location
-            showPointer = true
-          }
-          .onEnded { _ in
-            lastDrag = nil
-            if model.trackpadMode == .drag {
-              model.sendMouseDragEnd()
-            }
-            withAnimation(.easeOut(duration: 0.3)) { showPointer = false }
-          }
-          .simultaneously(with:
-            MagnifyGesture()
-              .onChanged { val in
-                let delta = val.magnification / pinchAnchorScale
-                model.sendZoom(scale: delta)
-                pinchAnchorScale = val.magnification
-              }
-              .onEnded { _ in pinchAnchorScale = 1.0 }
-          )
-      )
-      .onTapGesture(count: 2) {
-        tapHaptic.toggle()
-        model.sendDoubleClick()
-      }
-      .onTapGesture {
-        tapHaptic.toggle()
-        model.sendClick()
-      }
-      .onLongPressGesture(minimumDuration: 0.45) {
-        tapHaptic.toggle()
-        model.sendClick(button: "right")
-      }
+      .gesture(dragGesture.simultaneously(with: pinchGesture))
+      .highPriorityGesture(rightClickGesture)
+      .simultaneousGesture(doubleTapGesture.exclusively(before: singleTapGesture))
       .sensoryFeedback(.impact(weight: .medium, intensity: 0.9), trigger: tapHaptic)
 
       // Button bar
@@ -164,6 +120,67 @@ struct TrackpadView: View {
         }
       }
     }
+  }
+
+  private var dragGesture: some Gesture {
+    DragGesture(minimumDistance: 2)
+      .onChanged { val in
+        if let last = lastDrag {
+          let dx = val.translation.width - last.translation.width
+          let dy = val.translation.height - last.translation.height
+          if model.trackpadMode == .cursor {
+            model.sendMouseMove(dx: dx, dy: dy)
+          } else if model.trackpadMode == .drag {
+            model.sendMouseDrag(dx: dx, dy: dy)
+          } else {
+            model.sendScroll(dx: -dx * 0.6, dy: -dy * 0.6)
+          }
+        }
+        lastDrag = val
+        pointerPos = val.location
+        showPointer = true
+      }
+      .onEnded { _ in
+        lastDrag = nil
+        if model.trackpadMode == .drag {
+          model.sendMouseDragEnd()
+        }
+        withAnimation(.easeOut(duration: 0.3)) { showPointer = false }
+      }
+  }
+
+  private var pinchGesture: some Gesture {
+    MagnifyGesture()
+      .onChanged { val in
+        let delta = val.magnification / pinchAnchorScale
+        model.sendZoom(scale: delta)
+        pinchAnchorScale = val.magnification
+      }
+      .onEnded { _ in pinchAnchorScale = 1.0 }
+  }
+
+  private var singleTapGesture: some Gesture {
+    TapGesture()
+      .onEnded {
+        tapHaptic.toggle()
+        model.sendClick()
+      }
+  }
+
+  private var doubleTapGesture: some Gesture {
+    TapGesture(count: 2)
+      .onEnded {
+        tapHaptic.toggle()
+        model.sendDoubleClick()
+      }
+  }
+
+  private var rightClickGesture: some Gesture {
+    LongPressGesture(minimumDuration: 0.45)
+      .onEnded { _ in
+        tapHaptic.toggle()
+        model.sendClick(button: "right")
+      }
   }
 }
 

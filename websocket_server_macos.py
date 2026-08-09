@@ -139,6 +139,7 @@ def _translate_keycode_to_label(key_code: int) -> str:
 def _build_keyboard_layout_payload():
     rows = {}
     keycode_map = {}
+    row_order = list(KEYBOARD_LAYOUT_KEYCODES.keys())
 
     for row_name, key_codes in KEYBOARD_LAYOUT_KEYCODES.items():
         fallback_row = KEYBOARD_LAYOUT_FALLBACK_ROWS.get(row_name, [])
@@ -171,6 +172,7 @@ def _build_keyboard_layout_payload():
     payload = {
         'identifier': identifier,
         'name': display_name,
+        'row_order': row_order,
         'rows': rows,
     }
     return payload, keycode_map
@@ -190,12 +192,13 @@ def _refresh_keyboard_layout_cache(force: bool = False):
         return payload
 
 
-def get_keyboard_layout_payload():
-    payload = _refresh_keyboard_layout_cache()
+def get_keyboard_layout_payload(force: bool = False):
+    payload = _refresh_keyboard_layout_cache(force=force)
     if payload is None:
         return {
             'identifier': 'fallback',
             'name': 'US / QWERTY',
+            'row_order': list(KEYBOARD_LAYOUT_FALLBACK_ROWS.keys()),
             'rows': dict(KEYBOARD_LAYOUT_FALLBACK_ROWS),
         }
     return payload
@@ -369,6 +372,7 @@ def build_device_info_payload(include_name: bool = False):
     """Build a device-info payload. Name can be sent once, while stats are throttled."""
     info = SystemController.get_device_info()
     payload = {"type": "info"}
+    payload["keyboard_layout"] = get_keyboard_layout_payload(force=True)
     if include_name:
         if "name" in info:
             payload["name"] = info.get("name")
@@ -382,8 +386,6 @@ def build_device_info_payload(include_name: bool = False):
         payload["battery"] = info.get("battery")
     elif "battery_percentage" in info:
         payload["battery"] = info.get("battery_percentage")
-    if include_name:
-        payload["keyboard_layout"] = get_keyboard_layout_payload()
     return payload
 
 
@@ -702,9 +704,9 @@ async def handle_client(websocket):
 
     # Initialize per-client aggregation buffer and start flusher
     per_client_buffers[websocket] = {
-        "move": {"dx": 0, "dy": 0},
-        "drag": {"dx": 0, "dy": 0, "button": "left"},
-        "scroll": {"dx": 0, "dy": 0},
+        "move": {"dx": 0.0, "dy": 0.0},
+        "drag": {"dx": 0.0, "dy": 0.0, "button": "left"},
+        "scroll": {"dx": 0.0, "dy": 0.0},
         "actions": asyncio.Queue(maxsize=256),
         "lock": asyncio.Lock(),
         "mode": "cursor",
@@ -722,26 +724,27 @@ async def handle_client(websocket):
                 continue
             async with buf["lock"]:
                 m = buf["move"]
-                if m["dx"] != 0 or m["dy"] != 0:
-                    dx, dy = int(m["dx"]), int(m["dy"])
-                    m["dx"] = 0
-                    m["dy"] = 0
+                if m["dx"] != 0.0 or m["dy"] != 0.0:
+                    dx, dy = float(m["dx"]), float(m["dy"])
+                    m["dx"] = 0.0
+                    m["dy"] = 0.0
                     _enqueue_client_action(buf["actions"], ("move", dx, dy))
 
                 d = buf["drag"]
-                if d.get("dx", 0) != 0 or d.get("dy", 0) != 0:
-                    dx, dy = int(d.get("dx", 0)), int(d.get("dy", 0))
+                if d.get("dx", 0.0) != 0.0 or d.get("dy", 0.0) != 0.0:
+                    dx, dy = float(d.get("dx", 0.0)), float(d.get("dy", 0.0))
                     button = d.get("button", "left")
-                    d["dx"] = 0
-                    d["dy"] = 0
+                    d["dx"] = 0.0
+                    d["dy"] = 0.0
                     _enqueue_client_action(buf["actions"], ("drag", dx, dy, button))
 
                 s = buf["scroll"]
-                if s["dx"] != 0 or s["dy"] != 0:
-                    dx, dy = int(s["dx"]), int(s["dy"])
-                    s["dx"] = 0
-                    s["dy"] = 0
-                    _enqueue_client_action(buf["actions"], ("scroll", dx, dy))
+                send_dx = int(round(s["dx"]))
+                send_dy = int(round(s["dy"]))
+                if send_dx != 0 or send_dy != 0:
+                    s["dx"] -= send_dx
+                    s["dy"] -= send_dy
+                    _enqueue_client_action(buf["actions"], ("scroll", send_dx, send_dy))
 
     per_client_buffers[websocket]["worker"] = asyncio.create_task(
         _client_action_worker(websocket, per_client_buffers[websocket]["actions"])
@@ -784,8 +787,8 @@ async def handle_client(websocket):
                         _enqueue_client_action(per_client_buffers[websocket]["actions"], ("key", key_code_int, modifiers_int, key_type))
                     
                 elif message_type == "move":
-                    dx = int(data.get("dx", 0))
-                    dy = int(data.get("dy", 0))
+                    dx = float(data.get("dx", 0))
+                    dy = float(data.get("dy", 0))
                     buf = per_client_buffers.get(websocket)
                     if buf is not None:
                         async with buf["lock"]:
@@ -795,8 +798,8 @@ async def handle_client(websocket):
                         _enqueue_client_action(per_client_buffers[websocket]["actions"], ("move", dx, dy))
 
                 elif message_type == "drag":
-                    dx = int(data.get("dx", 0))
-                    dy = int(data.get("dy", 0))
+                    dx = float(data.get("dx", 0))
+                    dy = float(data.get("dy", 0))
                     button = data.get("button", "left")
                     buf = per_client_buffers.get(websocket)
                     if buf is not None:
@@ -813,8 +816,8 @@ async def handle_client(websocket):
                     _enqueue_client_action(per_client_buffers[websocket]["actions"], ("release_drag", button))
                     
                 elif message_type == "scroll":
-                    dx = int(data.get("dx", 0))
-                    dy = int(data.get("dy", 0))
+                    dx = float(data.get("dx", 0))
+                    dy = float(data.get("dy", 0))
                     buf = per_client_buffers.get(websocket)
                     if buf is not None:
                         async with buf["lock"]:
@@ -850,16 +853,21 @@ async def handle_client(websocket):
                     status = build_keyboard_status_payload()
                     await websocket.send(json.dumps(status))
 
-                    # Send device name once, then throttle CPU/battery updates.
+                    # Send keyboard layout on every ping so the iOS client can
+                    # auto-switch immediately when the Mac input source changes.
                     buf = per_client_buffers.get(websocket)
                     if buf is not None:
                         now = time.monotonic()
-                        should_send_info = (not buf["info_sent"]) or ((now - buf["last_info_sent_at"]) >= INFO_THROTTLE_SECONDS)
-                        if should_send_info:
-                            info = build_device_info_payload(include_name=not buf["info_sent"])
-                            await websocket.send(json.dumps(info))
-                            buf["info_sent"] = True
-                            buf["last_info_sent_at"] = now
+                        info = build_device_info_payload(include_name=(not buf["info_sent"]))
+
+                        if buf["info_sent"] and ((now - buf["last_info_sent_at"]) < INFO_THROTTLE_SECONDS):
+                            info.pop("name", None)
+                            info.pop("cpu", None)
+                            info.pop("battery", None)
+
+                        await websocket.send(json.dumps(info))
+                        buf["info_sent"] = True
+                        buf["last_info_sent_at"] = now
 
                 logger.debug(f"Processed message from {client_id}: {message_type}")
                 

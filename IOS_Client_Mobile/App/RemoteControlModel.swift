@@ -56,45 +56,59 @@ enum TrackpadMode: String, CaseIterable {
   case drag = "Drag"
 }
 
+struct KeyboardLayoutRow: Equatable, Identifiable {
+  var name: String
+  var keys: [String]
+
+  var id: String { name }
+}
+
 struct KeyboardLayoutProfile: Equatable {
   var identifier: String
   var displayName: String
-  var numberRow: [String]
-  var row1: [String]
-  var row2: [String]
-  var row3: [String]
+  var rows: [KeyboardLayoutRow]
 
   static let standard = KeyboardLayoutProfile(
     identifier: "us",
     displayName: "US / QWERTY",
-    numberRow: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
-    row1: ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
-    row2: ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
-    row3: ["z", "x", "c", "v", "b", "n", "m"]
+    rows: [
+      KeyboardLayoutRow(name: "numberRow", keys: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]),
+      KeyboardLayoutRow(name: "row1", keys: ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"]),
+      KeyboardLayoutRow(name: "row2", keys: ["a", "s", "d", "f", "g", "h", "j", "k", "l"]),
+      KeyboardLayoutRow(name: "row3", keys: ["z", "x", "c", "v", "b", "n", "m"]),
+    ]
   )
 
   static func fromInfo(_ info: [String: Any]) -> KeyboardLayoutProfile? {
     guard let layout = info["keyboard_layout"] as? [String: Any] else { return nil }
     guard let rows = layout["rows"] as? [String: Any] else { return nil }
-    guard
-      let numberRow = rows["numberRow"] as? [String],
-      let row1 = rows["row1"] as? [String],
-      let row2 = rows["row2"] as? [String],
-      let row3 = rows["row3"] as? [String]
-    else {
-      return nil
-    }
 
     let identifier = (layout["identifier"] as? String) ?? "detected"
     let displayName = (layout["name"] as? String) ?? "Detected Keyboard Layout"
+
+    let orderedRowNames = layoutRowOrder(from: layout, rows: rows)
+    let keyboardRows = orderedRowNames.compactMap { rowName -> KeyboardLayoutRow? in
+      guard let keys = rows[rowName] as? [String] else { return nil }
+      return KeyboardLayoutRow(name: rowName, keys: keys)
+    }
+
+    guard !keyboardRows.isEmpty else { return nil }
+
     return KeyboardLayoutProfile(
       identifier: identifier,
       displayName: displayName,
-      numberRow: numberRow,
-      row1: row1,
-      row2: row2,
-      row3: row3
+      rows: keyboardRows
     )
+  }
+
+  private static func layoutRowOrder(from layout: [String: Any], rows: [String: Any]) -> [String] {
+    if let order = (layout["row_order"] as? [String]) ?? (layout["rowOrder"] as? [String]) ?? (layout["rows_order"] as? [String]) {
+      return order
+    }
+
+    let preferred = ["numberRow", "row1", "row2", "row3"]
+    let remaining = rows.keys.filter { !preferred.contains($0) }.sorted()
+    return preferred.filter { rows[$0] != nil } + remaining
   }
 }
 
@@ -220,7 +234,7 @@ class RemoteControlModel {
 
   func sendKey(_ key: String) {
     let mods = activeModifiers.map { $0.rawValue }
-    send(["type": "key", "key": key.lowercased(), "modifiers": mods])
+    send(["type": "key", "key": key, "modifiers": mods])
 
     // Shift behaves as one-shot: clear immediately after any key dispatch.
     clearShiftState()
@@ -266,9 +280,6 @@ class RemoteControlModel {
       activeModifiers.remove(key)
     } else {
       activeModifiers.insert(key)
-      if key == .shift {
-        scheduleShiftReset()
-      }
     }
   }
 
@@ -316,17 +327,6 @@ class RemoteControlModel {
     if pendingMoveDX != 0 || pendingMoveDY != 0 || pendingScrollDX != 0 || pendingScrollDY != 0 || pendingDragDX != 0 || pendingDragDY != 0 {
       scheduleTrackpadFlush()
     }
-  }
-
-  private func scheduleShiftReset() {
-    shiftResetWorkItem?.cancel()
-    let workItem = DispatchWorkItem { [weak self] in
-      DispatchQueue.main.async {
-        self?.activeModifiers.remove(.shift)
-      }
-    }
-    shiftResetWorkItem = workItem
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: workItem)
   }
 
   private func applyDeviceInfo(_ info: [String: Any]) {
