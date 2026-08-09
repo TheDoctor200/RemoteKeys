@@ -3,6 +3,7 @@ import SwiftUI
 struct HeaderView: View {
   var model: RemoteControlModel
   var onSetupTap: () -> Void
+  @State private var connectionPulse = false
 
   var body: some View {
     HStack(alignment: .center, spacing: 0) {
@@ -23,18 +24,14 @@ struct HeaderView: View {
     HStack(spacing: 8) {
       ZStack {
         Circle()
-          .fill(statusColor.opacity(0.25))
-          .frame(width: 16, height: 16)
-          .scaleEffect(model.connectionState == .connected ? 1.4 : 1.0)
-          .animation(
-            model.connectionState == .connected
-              ? .easeInOut(duration: 1.2).repeatForever(autoreverses: true)
-              : .default,
-            value: model.connectionState
-          )
+          .fill(statusColor.opacity(connectionPulse ? 0.18 : 0.32))
+          .frame(width: 18, height: 18)
+          .scaleEffect(connectionPulse ? 1.65 : 1.0)
+          .shadow(color: statusColor.opacity(connectionPulse ? 0.85 : 0.45), radius: connectionPulse ? 8 : 4)
         Circle()
           .fill(statusColor)
           .frame(width: 8, height: 8)
+          .shadow(color: statusColor.opacity(0.4), radius: 2)
       }
 
       VStack(alignment: .leading, spacing: 1) {
@@ -56,6 +53,10 @@ struct HeaderView: View {
       }
     }
     .frame(minWidth: 90, alignment: .leading)
+    .onAppear { updatePulseAnimation() }
+    .onChange(of: model.connectionState) { _, _ in
+      updatePulseAnimation()
+    }
   }
 
   // MARK: Device Info
@@ -166,6 +167,16 @@ struct HeaderView: View {
       return .yellow
     case .disconnected:
       return .secondary
+    }
+  }
+
+  private func updatePulseAnimation() {
+    if model.connectionState == .connected {
+      withAnimation(.easeInOut(duration: 1.05).repeatForever(autoreverses: true)) {
+        connectionPulse = true
+      }
+    } else {
+      connectionPulse = false
     }
   }
 }

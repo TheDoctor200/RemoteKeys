@@ -1,4 +1,6 @@
+import AVFoundation
 import SwiftUI
+import UIKit
 
 struct SetupView: View {
   @Bindable var model: RemoteControlModel
@@ -6,6 +8,8 @@ struct SetupView: View {
 
   @AppStorage("appTheme") private var appTheme = 0 // 0 = System, 1 = Light, 2 = Dark
   @AppStorage("appTint") private var appTint = 0 // 0 = Blue, 1 = Red, 2 = Green, 3 = Orange, 4 = Purple
+  @State private var showingScanner = false
+  @State private var scannerErrorMessage: String?
 
   var body: some View {
     NavigationStack {
@@ -30,10 +34,18 @@ struct SetupView: View {
               .keyboardType(.numberPad)
               .foregroundStyle(.secondary)
           }
+
+          Button {
+            showingScanner = true
+          } label: {
+            Label("Scan QR Code", systemImage: "qrcode.viewfinder")
+              .frame(maxWidth: .infinity, alignment: .leading)
+          }
+          .foregroundStyle(.secondary)
         } header: {
           Text("Connection")
         } footer: {
-          Text("Install the RemoteKeys server app on your MacBook and ensure both devices are on the same Wi-Fi network.")
+          Text("Install the RemoteKeys server app on your MacBook and ensure both devices are on the same Wi-Fi network. You can also scan the QR code from the Mac companion to fill the address and port automatically.")
         }
 
         // Status
@@ -174,6 +186,27 @@ struct SetupView: View {
       }
       .navigationTitle("RemoteKeys")
       .navigationBarTitleDisplayMode(.inline)
+      .sheet(isPresented: $showingScanner) {
+        QRScannerView { scannedCode in
+          if model.applyConnectionString(scannedCode) {
+            showingScanner = false
+          } else {
+            scannerErrorMessage = "The QR code did not contain a valid RemoteKeys address and port."
+            showingScanner = false
+          }
+        }
+        .ignoresSafeArea()
+      }
+      .alert("Scan QR Code", isPresented: Binding(
+        get: { scannerErrorMessage != nil },
+        set: { if !$0 { scannerErrorMessage = nil } }
+      )) {
+        Button("OK", role: .cancel) {
+          scannerErrorMessage = nil
+        }
+      } message: {
+        Text(scannerErrorMessage ?? "")
+      }
       .toolbar {
         ToolbarItem(placement: .confirmationAction) {
           Button("Done") { dismiss() }
@@ -197,5 +230,119 @@ struct SetupView: View {
     case .connecting: return "Connecting…"
     case .disconnected: return "Disconnected"
     }
+  }
+}
+
+private struct QRScannerView: UIViewControllerRepresentable {
+  var onCodeScanned: (String) -> Void
+
+  func makeUIViewController(context: Context) -> ScannerViewController {
+    let controller = ScannerViewController()
+    controller.onCodeScanned = onCodeScanned
+    return controller
+  }
+
+  func updateUIViewController(_ uiViewController: ScannerViewController, context: Context) {
+    uiViewController.onCodeScanned = onCodeScanned
+  }
+}
+
+private final class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
+  var onCodeScanned: ((String) -> Void)?
+
+  private let session = AVCaptureSession()
+  private let previewLayer = AVCaptureVideoPreviewLayer()
+  private let messageLabel = UILabel()
+  private var didScanCode = false
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    view.backgroundColor = .black
+    configureScanner()
+    configureOverlay()
+  }
+
+  override func viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
+    previewLayer.frame = view.bounds
+  }
+
+  private func configureScanner() {
+    guard let device = AVCaptureDevice.default(for: .video),
+          let input = try? AVCaptureDeviceInput(device: device),
+          session.canAddInput(input) else {
+      showUnavailableMessage()
+      return
+    }
+
+    session.addInput(input)
+
+    let metadataOutput = AVCaptureMetadataOutput()
+    guard session.canAddOutput(metadataOutput) else {
+      showUnavailableMessage()
+      return
+    }
+
+    session.addOutput(metadataOutput)
+    metadataOutput.setMetadataObjectsDelegate(self, queue: .main)
+    metadataOutput.metadataObjectTypes = [.qr]
+
+    previewLayer.session = session
+    previewLayer.videoGravity = .resizeAspectFill
+    view.layer.insertSublayer(previewLayer, at: 0)
+
+    DispatchQueue.global(qos: .userInitiated).async { [session] in
+      session.startRunning()
+    }
+  }
+
+  private func configureOverlay() {
+    messageLabel.translatesAutoresizingMaskIntoConstraints = false
+    messageLabel.text = "Point the camera at the QR code shown in the Mac companion app."
+    messageLabel.numberOfLines = 0
+    messageLabel.textAlignment = .center
+    messageLabel.textColor = .white
+    messageLabel.backgroundColor = UIColor.black.withAlphaComponent(0.55)
+    messageLabel.layer.cornerRadius = 14
+    messageLabel.layer.masksToBounds = true
+    messageLabel.font = .preferredFont(forTextStyle: .callout)
+
+    view.addSubview(messageLabel)
+    NSLayoutConstraint.activate([
+      messageLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+      messageLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+      messageLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -32)
+    ])
+  }
+
+  private func showUnavailableMessage() {
+    messageLabel.translatesAutoresizingMaskIntoConstraints = false
+    messageLabel.text = "Camera scanning is unavailable on this device."
+    messageLabel.numberOfLines = 0
+    messageLabel.textAlignment = .center
+    messageLabel.textColor = .white
+    messageLabel.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+    messageLabel.layer.cornerRadius = 14
+    messageLabel.layer.masksToBounds = true
+    messageLabel.font = .preferredFont(forTextStyle: .callout)
+
+    view.addSubview(messageLabel)
+    NSLayoutConstraint.activate([
+      messageLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+      messageLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+      messageLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 24),
+      messageLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -24)
+    ])
+  }
+
+  func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+    guard !didScanCode,
+          let metadataObject = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
+          metadataObject.type == .qr,
+          let stringValue = metadataObject.stringValue else { return }
+
+    didScanCode = true
+    session.stopRunning()
+    onCodeScanned?(stringValue)
   }
 }

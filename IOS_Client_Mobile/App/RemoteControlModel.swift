@@ -212,6 +212,33 @@ class RemoteControlModel {
     }
   }
 
+  func applyConnectionString(_ string: String) -> Bool {
+    let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return false }
+
+    let candidates = [trimmed, trimmed.replacingOccurrences(of: "ws://", with: "http://"), trimmed.replacingOccurrences(of: "wss://", with: "https://")]
+
+    for candidate in candidates {
+      let prefixed = candidate.contains("://") ? candidate : "ws://\(candidate)"
+      guard let components = URLComponents(string: prefixed), let host = components.host, let port = components.port else { continue }
+      hostAddress = host
+      hostPort = String(port)
+      return true
+    }
+
+    let hostPortValue = trimmed
+      .replacingOccurrences(of: "ws://", with: "")
+      .replacingOccurrences(of: "wss://", with: "")
+      .replacingOccurrences(of: "/remote", with: "")
+
+    let parts = hostPortValue.split(separator: ":", maxSplits: 1).map(String.init)
+    guard parts.count == 2, !parts[0].isEmpty, Int(parts[1]) != nil else { return false }
+
+    hostAddress = parts[0]
+    hostPort = parts[1]
+    return true
+  }
+
   var canConnect: Bool {
     !hostAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && Int(hostPort) != nil
   }

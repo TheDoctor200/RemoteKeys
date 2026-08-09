@@ -24,6 +24,8 @@
 	<false/>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>RemoteKeys uses your local network to connect to and control your MacBook.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>RemoteKeys uses the camera to scan the QR code shown in the Mac companion app and fill in the connection address automatically.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>
